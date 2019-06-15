@@ -19,12 +19,14 @@ public class Players {
 	private Visit plugin;
 	private Map<UUID, VPlayer> players;
 	
-	private File playersFile = new File(plugin.getDataFolder(), "players.yml");
+	private File playersFile;
 	private FileConfiguration config;
 	
 	public Players(Visit plugin) {
 		this.plugin = plugin;
-		load();
+		// Add to scheduler instead of just outright running
+		// to avoid deserializing locations before worlds load
+		Bukkit.getScheduler().runTask(plugin, () -> load());
 
 		// TODO: Let users specify save interval?
 		// Start timer to auto-save players' locations every 15 minutes
@@ -116,8 +118,7 @@ public class Players {
 				plugin.getLogger().severe("Invalid UUID found: " + uuidString + ". Skipping...");
 				continue;
 			}
-			VPlayer player = new VPlayer(config.getConfigurationSection(uuidString));
-			players.put(uuid, player);
+			players.put(uuid, new VPlayer(config.getConfigurationSection(uuidString)));
 		}
 	}
 	
@@ -127,6 +128,7 @@ public class Players {
 	}
 	
 	private void createConfig() {
+		playersFile = new File(plugin.getDataFolder(), "players.yml");
 		try {
 			if (!plugin.getDataFolder().isDirectory()) {
 				plugin.getDataFolder().mkdirs();

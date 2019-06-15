@@ -11,7 +11,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 public class Messages {
 	private Visit plugin;
 
-	private File messagesFile = new File(plugin.getDataFolder(), "messages.yml");
+	private File messagesFile;
 	private static FileConfiguration config;
 	
 	public static final String PLAYER_LABEL = "{player}";
@@ -41,7 +41,7 @@ public class Messages {
 
 	private void addMessageDefaults() {
 		int toSave = 0;
-
+		// Normal messages
 		toSave += addMessage("set-visit", "&aSet your visit location to {X} {Y} {Z}.");
 		toSave += addMessage("del-visit", "&aYour visit location has been deleted.");
 		toSave += addMessage("visit", "&aVisiting " + PLAYER_LABEL + "...");
@@ -49,10 +49,14 @@ public class Messages {
 		toSave += addMessage("messages-on", "&aVisit notifications have been turned on.");
 		toSave += addMessage("messages-off", "&aVisit notifications have been turned off.");
 		toSave += addMessage("players-title", "&aPlayers");
+		toSave += addMessage("players-next", "Next");
+		toSave += addMessage("players-previous", "Previous");
+		// Usage messages
 		toSave += addMessage("usage.set-visit", "&aUse &e/setvisit &ato set your visit to current location.");
 		toSave += addMessage("usage.del-visit", "&aUse &e/delvisit &ato remove your visit location.");
 		toSave += addMessage("usage.visit", "&aUse &e/visit " + PLAYER_LABEL + " &ato visit a player.");
 		toSave += addMessage("usage.message-toggle", "&aUse &e " + COMMAND_LABEL + " messages on/off &ato enable/disable notifications when someone visits you.");
+		// Error messages
 		toSave += addMessage("error.player-not-found", "&4Player &e" + PLAYER_LABEL + " &4was not found.");
 		toSave += addMessage("error.visit-not-set", "&4Player &e" + PLAYER_LABEL + " &4does not have a visit location.");
 		toSave += addMessage("error.no-visit-locations", "&4No visit locations have been set.");
@@ -62,6 +66,7 @@ public class Messages {
 		toSave += addMessage("error.no-home-to-delete", "&4No visit location was previously set.");
 		toSave += addMessage("error.messages-already-on", "&4Visit notificaitons are already on.");
 		toSave += addMessage("error.messages-already-off", "&4Visit notificaitons are already off.");
+		// Admin messages
 		toSave += addMessage("admin.set-visit", "&aSet " + PLAYER_LABEL + "'s visit location to {X} {Y} {Z}.");
 		toSave += addMessage("admin.del-visit", "&aSuccessfuly deleted " + PLAYER_LABEL + "'s visit location.");
 
@@ -70,6 +75,7 @@ public class Messages {
 	}
 
 	private void createConfig() {
+		messagesFile = new File(plugin.getDataFolder(), "messages.yml");
 		try {
 			if (!plugin.getDataFolder().isDirectory()) {
 				plugin.getDataFolder().mkdirs();
@@ -96,7 +102,7 @@ public class Messages {
 	}
 
 	public static enum Message {
-		SET_VISIT, DEL_VISIT, VISIT, VISITED_YOU, MESSAGES_ON, MESSAGES_OFF, PLAYERS_TITLE;
+		SET_VISIT, DEL_VISIT, VISIT, VISITED_YOU, MESSAGES_ON, MESSAGES_OFF, PLAYERS_TITLE, PLAYERS_NEXT, PLAYERS_PREVIOUS;
 
 		@Override
 		public String toString() {

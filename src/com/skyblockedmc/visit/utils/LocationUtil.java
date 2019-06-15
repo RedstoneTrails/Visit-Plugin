@@ -122,7 +122,7 @@ public class LocationUtil {
 		int x = loc.getBlockX();
 		int y = (int) Math.round(loc.getY());
 		int z = loc.getBlockZ();
-		return new Location(world, x + 0.5, y, z + 0.5, loc.getYaw(), loc.getPitch());
+		return new Location(world, x + 0.5, y, z + 0.5, Math.round(loc.getYaw() / 90) * 90, 0);
 	}
 
 	public static Location getSafeDestination(final Player player, final Location loc) throws Exception {
@@ -196,7 +196,7 @@ public class LocationUtil {
 				}
 			}
 		}
-		return new Location(world, x + 0.5, y, z + 0.5, loc.getYaw(), loc.getPitch());
+		return getRoundedDestination(new Location(world, x, y, z, loc.getYaw(), loc.getPitch()));
 	}
 
 	public static boolean shouldFly(Location loc) {

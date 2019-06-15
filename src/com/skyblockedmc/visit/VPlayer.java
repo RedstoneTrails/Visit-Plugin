@@ -13,7 +13,7 @@ public class VPlayer {
 	}
 	
 	public VPlayer(Location loc) {
-		this(loc, false);
+		this(loc, true);
 	}
 	
 	public VPlayer(ConfigurationSection config) {

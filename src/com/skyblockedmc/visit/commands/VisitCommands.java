@@ -1,6 +1,7 @@
 package com.skyblockedmc.visit.commands;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -14,6 +15,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
+import org.bukkit.util.StringUtil;
 
 import com.skyblockedmc.visit.Messages;
 import com.skyblockedmc.visit.Messages.AdminMessage;
@@ -53,11 +55,11 @@ public class VisitCommands extends LocationUtil implements CommandExecutor, TabC
 			}
 			// Admin use to set other player's visit
 			else if (args.length == 1 && isAdmin(player)) {
-				Player target = findPlayer(args[0]);
+				UUID target = findPlayer(args[0]);
 				if (target == null)
-					sender.sendMessage(ErrorMessage.PLAYER_NOT_FOUND.toString().replaceAll(Messages.PLAYER_LABEL, args[0]));
+					sender.sendMessage(ErrorMessage.PLAYER_NOT_FOUND.toString().replace(Messages.PLAYER_LABEL, args[0]));
 				else
-					setVisit(player, target.getUniqueId(), player.getLocation());
+					setVisit(player, target, player.getLocation());
 			}
 			// Too many args, send proper usage
 			else {
@@ -74,11 +76,11 @@ public class VisitCommands extends LocationUtil implements CommandExecutor, TabC
 			}
 			// Admin use to delete other player's visit
 			else if (args.length == 1 && isAdmin(player)) {
-				Player target = findPlayer(args[0]);
+				UUID target = findPlayer(args[0]);
 				if (target == null)
-					sender.sendMessage(ErrorMessage.PLAYER_NOT_FOUND.toString().replaceAll(Messages.PLAYER_LABEL, args[0]));
+					sender.sendMessage(ErrorMessage.PLAYER_NOT_FOUND.toString().replace(Messages.PLAYER_LABEL, args[0]));
 				else
-					delVisit(player, target.getUniqueId());
+					delVisit(player, target);
 			}
 			// Too many args, send proper usage
 			else {
@@ -165,23 +167,23 @@ public class VisitCommands extends LocationUtil implements CommandExecutor, TabC
 	 * @param nameString - String corresponding to a players name
 	 * @return Player corresponding to given String, null if no player is found
 	 */
-	private Player findPlayer(String nameString) {
-		Player player = null;
+	private UUID findPlayer(String nameString) {
+		UUID uuid = null;
 		
 		// Check through our existing list of players first
 		for (OfflinePlayer testPlayer : plugin.getServer().getOfflinePlayers()) {
 			// Check if name exactly matches
 			if (testPlayer.getName().toLowerCase().equals(nameString.toLowerCase())) {
-				player = testPlayer.getPlayer();
+				uuid = testPlayer.getUniqueId();
 				break;
 			}
 			// Check if they typed first part of a name
 			else if (testPlayer.getName().toLowerCase().startsWith(nameString.toLowerCase())) {
-				player = testPlayer.getPlayer();
+				uuid = testPlayer.getUniqueId();
 			}
 		}
 		
-		return player;
+		return uuid;
 	}
 	
 	/**
@@ -203,6 +205,9 @@ public class VisitCommands extends LocationUtil implements CommandExecutor, TabC
 			player.sendMessage(ErrorMessage.UNSAFE_LOCATION.toString());
 		}
 		
+		// Adjust location to have more suitable values
+		loc = getRoundedDestination(loc);
+		
 		// All is well, set their visit here
 		plugin.players().add(uuid, loc);
 		
@@ -219,13 +224,13 @@ public class VisitCommands extends LocationUtil implements CommandExecutor, TabC
 		else {
 			OfflinePlayer target =  Bukkit.getOfflinePlayer(uuid);
 			String targetName = target.getName();
-			message = AdminMessage.SET_VISIT.toString().replaceAll(Messages.PLAYER_LABEL, targetName);
+			message = AdminMessage.SET_VISIT.toString().replace(Messages.PLAYER_LABEL, targetName);
 			if (target.isOnline()) {
-				target.getPlayer().sendMessage(Message.SET_VISIT.toString().replaceAll("{X}", x).replaceAll("{Y}", y).replaceAll("{Z}", z));
+				target.getPlayer().sendMessage(Message.SET_VISIT.toString().replace("{X}", x).replace("{Y}", y).replace("{Z}", z));
 			}
 		}
 		
-		player.sendMessage(message.replaceAll("{X}", x).replaceAll("{Y}", y).replaceAll("{Z}", z));
+		player.sendMessage(message.replace("{X}", x).replace("{Y}", y).replace("{Z}", z));
 	}
 	
 	/**
@@ -251,7 +256,7 @@ public class VisitCommands extends LocationUtil implements CommandExecutor, TabC
 		else {
 			OfflinePlayer target =  Bukkit.getOfflinePlayer(uuid);
 			String targetName = target.getName();
-			message = AdminMessage.DEL_VISIT.toString().replaceAll(Messages.PLAYER_LABEL, targetName);
+			message = AdminMessage.DEL_VISIT.toString().replace(Messages.PLAYER_LABEL, targetName);
 			if (target.isOnline()) {
 				target.getPlayer().sendMessage(Message.DEL_VISIT.toString());
 			}
@@ -268,16 +273,17 @@ public class VisitCommands extends LocationUtil implements CommandExecutor, TabC
 	 */
 	private void visit(Player player, String str) {
 		// Try to find a player from the string, send error if no player found
-		Player target = findPlayer(str);
+		UUID target = findPlayer(str);
 		if (target == null) {
-			player.sendMessage(ErrorMessage.PLAYER_NOT_FOUND.toString().replaceAll(Messages.PLAYER_LABEL, str));
+			player.sendMessage(ErrorMessage.PLAYER_NOT_FOUND.toString().replace(Messages.PLAYER_LABEL, str));
 			return;
 		}
+		OfflinePlayer targetPlayer = Bukkit.getOfflinePlayer(target);
 		
 		// Try to find their visit location, send error if they don't have one set
-		Location destination = plugin.players().findLocation(target.getUniqueId());
+		Location destination = plugin.players().findLocation(target);
 		if (destination == null) {
-			player.sendMessage(ErrorMessage.VISIT_NOT_SET.toString().replaceAll(Messages.PLAYER_LABEL, target.getName()));
+			player.sendMessage(ErrorMessage.VISIT_NOT_SET.toString().replace(Messages.PLAYER_LABEL, targetPlayer.getName()));
 			return;
 		}
 		
@@ -290,10 +296,12 @@ public class VisitCommands extends LocationUtil implements CommandExecutor, TabC
 		}
 		
 		// All is well, send messages and teleport them
-		if (target.isOnline() && plugin.players().wantsMessages(target.getUniqueId())) {
-			target.sendMessage(Message.VISITED_YOU.toString().replaceAll(Messages.PLAYER_LABEL, player.getName()));
+		if (!player.getUniqueId().equals(target)) {
+			if (targetPlayer.isOnline() && plugin.players().wantsMessages(target)) {
+				targetPlayer.getPlayer().sendMessage(Message.VISITED_YOU.toString().replace(Messages.PLAYER_LABEL, player.getName()));
+			}
+			player.sendMessage(Message.VISIT.toString().replace(Messages.PLAYER_LABEL, targetPlayer.getName()));
 		}
-		player.sendMessage(Message.VISIT.toString().replaceAll(Messages.PLAYER_LABEL, target.getName()));
 		player.teleport(destination);
 	}
 	
@@ -303,6 +311,7 @@ public class VisitCommands extends LocationUtil implements CommandExecutor, TabC
 			return;
 		}
 			
+		player.openInventory(plugin.playerPanel().getPanel(0));
 	}
 	
 	private void showHelp(CommandSender sender) {
@@ -332,15 +341,25 @@ public class VisitCommands extends LocationUtil implements CommandExecutor, TabC
 		String cmd = command.getName().toLowerCase();
 		List<String> options = new ArrayList<>();
 		
-		if (args.length == 0) {
+		if (args.length == 0 || args.length == 1) {
 			if (player == null || isAdmin(player)) {
 				if (cmd.equalsIgnoreCase("setvisit"))
 					options.addAll(onlinePlayerList(player));
 				else if (cmd.equalsIgnoreCase("delvisit"))
 					options.addAll(plugin.players().names());
 			}
-			if (cmd.equalsIgnoreCase("visit"))
-				options.addAll(plugin.players().names());
+			if (cmd.equalsIgnoreCase("visit")) {
+				List<String> allPlayers = new ArrayList<>();
+				allPlayers.addAll(plugin.players().names());
+				allPlayers.addAll(onlinePlayerList(player));
+				List<String> showPlayers = new ArrayList<>();
+				// Cycle through all players and see if any start with our given string
+				if (args.length == 1)
+					StringUtil.copyPartialMatches(args[0], allPlayers, showPlayers);
+				else
+					showPlayers = allPlayers;
+				options.addAll(showPlayers);
+			}
 			else if (cmd.equalsIgnoreCase(Messages.COMMAND_LABEL)) {
 				options.add("help");
 				options.add("messages");
@@ -348,13 +367,13 @@ public class VisitCommands extends LocationUtil implements CommandExecutor, TabC
 					options.add("reload");
 				}
 			}
-		} else if (args.length == 1) {
+		} else if (args.length == 1 || args.length == 2) {
 			if (cmd.equalsIgnoreCase("messages")) {
 				options.add("on");
 				options.add("off");
 			}
 		}
-
+		Collections.sort(options);
 		return options;
 	}
 	

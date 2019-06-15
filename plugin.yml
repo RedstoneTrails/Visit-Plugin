@@ -21,3 +21,4 @@ commands:
      visitcfg:
          description: Allows customization of visit plugin
          usage: /visitcfg help
+         aliases: [vcfg]
