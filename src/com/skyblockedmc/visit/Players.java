@@ -74,6 +74,8 @@ public class Players {
 		
 		VPlayer newPlayer = new VPlayer(loc);
 		players.put(uuid, newPlayer);
+		
+		plugin.playerPanel().updatePanel();
 	}
 	
 	public void remove(UUID uuid) {
@@ -82,6 +84,8 @@ public class Players {
 		
 		if (config.contains(uuid.toString()))
 			config.set(uuid.toString(), null);
+
+		plugin.playerPanel().updatePanel();
 	}
 	
 	public void save() {

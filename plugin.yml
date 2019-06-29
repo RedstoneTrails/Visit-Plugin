@@ -18,6 +18,7 @@ commands:
      players:
          description: Pops up GUI of all available players to visit
          usage: /players
+         aliases: [visits]
      visitcfg:
          description: Allows customization of visit plugin
          usage: /visitcfg help

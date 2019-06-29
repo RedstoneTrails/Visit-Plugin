@@ -91,8 +91,12 @@ public class VisitCommands extends LocationUtil implements CommandExecutor, TabC
 		}
 		// Using /visit
 		else if (cmd.equalsIgnoreCase("visit")) {
+			// Pull up visit GUI
+			if (args.length == 0) {
+				showPlayers(player);
+			}
 			// Visiting a player
-			if (args.length == 1) {
+			else if (args.length == 1) {
 				visit(player, args[0]);
 			}
 			// Not enough args, or too many
@@ -346,19 +350,10 @@ public class VisitCommands extends LocationUtil implements CommandExecutor, TabC
 				if (cmd.equalsIgnoreCase("setvisit"))
 					options.addAll(onlinePlayerList(player));
 				else if (cmd.equalsIgnoreCase("delvisit"))
-					options.addAll(plugin.players().names());
+					options.addAll(getPlayersToShow(player, args));
 			}
 			if (cmd.equalsIgnoreCase("visit")) {
-				List<String> allPlayers = new ArrayList<>();
-				allPlayers.addAll(plugin.players().names());
-				allPlayers.addAll(onlinePlayerList(player));
-				List<String> showPlayers = new ArrayList<>();
-				// Cycle through all players and see if any start with our given string
-				if (args.length == 1)
-					StringUtil.copyPartialMatches(args[0], allPlayers, showPlayers);
-				else
-					showPlayers = allPlayers;
-				options.addAll(showPlayers);
+				options.addAll(getPlayersToShow(player, args));
 			}
 			else if (cmd.equalsIgnoreCase(Messages.COMMAND_LABEL)) {
 				options.add("help");
@@ -375,6 +370,20 @@ public class VisitCommands extends LocationUtil implements CommandExecutor, TabC
 		}
 		Collections.sort(options);
 		return options;
+	}
+	
+	private List<String> getPlayersToShow(Player player, String[] args) {
+		List<String> allPlayers = new ArrayList<>();
+		allPlayers.addAll(plugin.players().names());
+		allPlayers.addAll(onlinePlayerList(player));
+		List<String> showPlayers = new ArrayList<>();
+		// Cycle through all players and see if any start with our given string
+		if (args.length == 1)
+			StringUtil.copyPartialMatches(args[0], allPlayers, showPlayers);
+		else
+			showPlayers = allPlayers;
+		
+		return showPlayers;
 	}
 	
 	private boolean isAdmin(Player player) {
