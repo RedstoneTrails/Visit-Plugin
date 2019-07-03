@@ -1,4 +1,4 @@
-package com.skyblockedmc.visit;
+package com.reddevtrails.visit;
 
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
@@ -13,7 +13,7 @@ public class VPlayer {
 	}
 	
 	public VPlayer(Location loc) {
-		this(loc, true);
+		this(loc, Settings.messagesDefaultOn);
 	}
 	
 	public VPlayer(ConfigurationSection config) {

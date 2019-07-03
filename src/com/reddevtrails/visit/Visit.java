@@ -1,10 +1,10 @@
-package com.skyblockedmc.visit;
+package com.reddevtrails.visit;
 
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.skyblockedmc.visit.commands.VisitCommands;
-import com.skyblockedmc.visit.panels.PlayerPanel;
-import com.skyblockedmc.visit.utils.HeadGetter;
+import com.reddevtrails.visit.commands.VisitCommands;
+import com.reddevtrails.visit.panels.PlayerPanel;
+import com.reddevtrails.visit.utils.HeadGetter;
 
 public class Visit extends JavaPlugin {
 	private static Visit plugin;
@@ -23,6 +23,9 @@ public class Visit extends JavaPlugin {
 		headGetter = new HeadGetter(this);
 		registerCommands();
 		registerEvents();
+		
+		saveDefaultConfig();
+		Config.load(this);
 	}
 	
 	@Override
@@ -32,6 +35,9 @@ public class Visit extends JavaPlugin {
 	
 	public void reload() {
 		messages.load();
+		reloadConfig();
+		Config.load(this);
+		playerPanel = new PlayerPanel(this);
 	}
 	
 	public void registerCommands() {

@@ -1,4 +1,4 @@
-package com.skyblockedmc.visit.utils;
+package com.reddevtrails.visit.utils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,7 +15,7 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import com.skyblockedmc.visit.Settings;
+import com.reddevtrails.visit.Settings;
 
 public class LocationUtil {
 	// The player can stand inside these materials
@@ -83,7 +83,7 @@ public class LocationUtil {
 	}
 
 	public static boolean blockIsUnsafeForUser(final Player player, final World world, final int x, final int y, final int z) {
-		if (player.isOnline() && (player.getGameMode() == GameMode.CREATIVE || Settings.allowUnsafeTeleport)) {
+		if (player.isOnline() && (player.getGameMode() == GameMode.CREATIVE || !Settings.safeTeleport)) {
 			return false;
 		}
 
@@ -122,11 +122,21 @@ public class LocationUtil {
 		int x = loc.getBlockX();
 		int y = (int) Math.round(loc.getY());
 		int z = loc.getBlockZ();
-		return new Location(world, x + 0.5, y, z + 0.5, Math.round(loc.getYaw() / 90) * 90, 0);
+		float yaw = loc.getYaw();
+		float pitch = loc.getPitch();
+		
+		// Check if we need to do any tweaking to pitch and yaw
+		int rounding = Settings.cardinalRounding;
+		if (rounding != 0)
+			yaw = Math.round(yaw / rounding) * rounding;
+		if (Settings.centerUpDown)
+			pitch = 0;
+		
+		return new Location(world, x + 0.5, y, z + 0.5, yaw, pitch);
 	}
 
 	public static Location getSafeDestination(final Player player, final Location loc) throws Exception {
-		if (player.isOnline() && (player.getGameMode() == GameMode.CREATIVE || Settings.allowUnsafeTeleport)) {
+		if (player.isOnline() && (player.getGameMode() == GameMode.CREATIVE || !Settings.safeTeleport)) {
 			if (player.getAllowFlight() && shouldFly(loc)) {
 				player.setFlying(true);
 			}

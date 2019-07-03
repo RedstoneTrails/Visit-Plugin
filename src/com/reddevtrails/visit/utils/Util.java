@@ -1,8 +1,8 @@
-package com.skyblockedmc.visit.utils;
+package com.reddevtrails.visit.utils;
 
 import org.bukkit.entity.Player;
 
-import com.skyblockedmc.visit.Visit;
+import com.reddevtrails.visit.Visit;
 
 public class Util {
 	

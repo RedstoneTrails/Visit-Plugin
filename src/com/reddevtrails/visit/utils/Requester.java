@@ -14,9 +14,9 @@
  *     You should have received a copy of the GNU General Public License
  *     along with ASkyBlock.  If not, see <http://www.gnu.org/licenses/>.
  *******************************************************************************/
-package com.skyblockedmc.visit.utils;
+package com.reddevtrails.visit.utils;
 
-import com.skyblockedmc.visit.utils.HeadGetter.HeadInfo;
+import com.reddevtrails.visit.utils.HeadGetter.HeadInfo;
 
 public interface Requester {
     

@@ -1,4 +1,4 @@
-package com.skyblockedmc.visit;
+package com.reddevtrails.visit;
 
 import java.io.File;
 import java.io.IOException;
@@ -75,7 +75,7 @@ public class Players {
 		VPlayer newPlayer = new VPlayer(loc);
 		players.put(uuid, newPlayer);
 		
-		plugin.playerPanel().updatePanel();
+		plugin.playerPanel().addVisit(uuid);
 	}
 	
 	public void remove(UUID uuid) {

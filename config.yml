@@ -1,0 +1,25 @@
+# If true, players can only set their visit location at locations deemed safe.
+# Players can also not visit locations that have become unsafe.
+Safe-Teleport: true
+
+# If true, visit locations will always default to having the player look straight ahead.
+# If false, visit locations can have players looking straight up, straight down, or anywhere in-between.
+Center-Up-Down: true
+
+# Nearest degree to round view rotation to for visit locations.
+# Value of 90 will snap to North, South, East, and West.
+# Value of 45 will snap to four major cardinal directions, as well as North-East, North-West, South-East, and South-West.
+# Set this value to 0 to disable it.
+Cardinal-Rounding: 45
+
+# Sets default behavior for whether people will receive messages when someone visits them.
+# If true, players will receive visit notifications by default, and will have to manually disable them.
+# If false, players will not receive visit notifications, and will have to manually turn them on.
+# Message settings can be changed in-game with /visitcfg messages on/off
+Messages-Default-On: true
+
+# How many players can be shown on the visit GUI at one time.
+# Must be a multiple of 9 between 9 and 45 (last row of GUI will always be reserved for page navigation tools)
+# The GUI will only show as many rows as it needs at one time, no matter the max.
+# I advise leaving this value at 45 to get the most out of it. If you need to go smaller, 27 is a good value as well.
+Max-Players-Per-Page: 45

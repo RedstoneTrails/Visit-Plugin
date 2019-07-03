@@ -1,5 +1,5 @@
 name: Visit
-main: com.skyblockedmc.visit.Visit
+main: com.reddevtrails.visit.Visit
 version: ${version}
 description: Plugin to easily visit other players
 author: RedstoneTrails

@@ -1,4 +1,4 @@
-package com.skyblockedmc.visit.commands;
+package com.reddevtrails.visit.commands;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -17,14 +17,15 @@ import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.bukkit.util.StringUtil;
 
-import com.skyblockedmc.visit.Messages;
-import com.skyblockedmc.visit.Messages.AdminMessage;
-import com.skyblockedmc.visit.Messages.ErrorMessage;
-import com.skyblockedmc.visit.Messages.Message;
-import com.skyblockedmc.visit.Messages.UsageMessage;
-import com.skyblockedmc.visit.VPlayer;
-import com.skyblockedmc.visit.Visit;
-import com.skyblockedmc.visit.utils.LocationUtil;
+import com.reddevtrails.visit.Messages;
+import com.reddevtrails.visit.VPlayer;
+import com.reddevtrails.visit.Visit;
+import com.reddevtrails.visit.Messages.AdminMessage;
+import com.reddevtrails.visit.Messages.ErrorMessage;
+import com.reddevtrails.visit.Messages.HelpMessage;
+import com.reddevtrails.visit.Messages.Message;
+import com.reddevtrails.visit.Messages.UsageMessage;
+import com.reddevtrails.visit.utils.LocationUtil;
 
 public class VisitCommands extends LocationUtil implements CommandExecutor, TabCompleter {
 	private Visit plugin;
@@ -319,21 +320,23 @@ public class VisitCommands extends LocationUtil implements CommandExecutor, TabC
 	}
 	
 	private void showHelp(CommandSender sender) {
-		sender.sendMessage(Messages.colorize("&a--- Visit Commands ---"));
-		sender.sendMessage(Messages.colorize("&6/setvisit&r: Sets your visit to your current location."));
-		sender.sendMessage(Messages.colorize("&6/delvisit&r: Deletes your visit location."));
-		sender.sendMessage(Messages.colorize("&6/visit <player>&r: Teleports you to a player's visit location."));
-		sender.sendMessage(Messages.colorize("&6/players&r: Shows a GUI of all players you can visit."));
-		sender.sendMessage(Messages.colorize("&6/" + Messages.COMMAND_LABEL + " help&r: Shows list of commands for this plugin."));
-		sender.sendMessage(Messages.colorize("&6/" + Messages.COMMAND_LABEL + " messages on/off&r: Turns on/off your notifications for when someone visits you."));
+		// TODO: change these to read from messages config
+		sender.sendMessage("");
+		sender.sendMessage(HelpMessage.HEADER.toString());
+		sender.sendMessage(HelpMessage.SET_VISIT.toString());
+		sender.sendMessage(HelpMessage.DEL_VISIT.toString());
+		sender.sendMessage(HelpMessage.VISIT.toString());
+		sender.sendMessage(HelpMessage.PLAYERS.toString());
+		sender.sendMessage(HelpMessage.HELP.toString());
+		sender.sendMessage(HelpMessage.MESSAGES.toString());
 		
 		// If console or admin is calling, show admin commands
 		if (!(sender instanceof Player) || (sender instanceof Player && isAdmin((Player)sender))) {
 			sender.sendMessage("");
-			sender.sendMessage(Messages.colorize("&a--- Admin Commands ---"));
-			sender.sendMessage(Messages.colorize("&6/setvisit <player>&r: Sets visit for target player to your current location."));
-			sender.sendMessage(Messages.colorize("&6/delvisit <player>&r: Deletes visit location for target player."));
-			sender.sendMessage(Messages.colorize("&6/" + Messages.COMMAND_LABEL + " reload&r: Reloads messages and configuration settings."));
+			sender.sendMessage(HelpMessage.ADMIN_HEADER.toString());
+			sender.sendMessage(HelpMessage.ADMIN_SET_VISIT.toString());
+			sender.sendMessage(HelpMessage.ADMIN_DEL_VISIT.toString());
+			sender.sendMessage(HelpMessage.RELOAD.toString());
 		}
 	}
 
@@ -343,47 +346,51 @@ public class VisitCommands extends LocationUtil implements CommandExecutor, TabC
 		if (sender instanceof Player)
 			player = (Player) sender;
 		String cmd = command.getName().toLowerCase();
+		List<String> allOptions = new ArrayList<>();
 		List<String> options = new ArrayList<>();
 		
 		if (args.length == 0 || args.length == 1) {
 			if (player == null || isAdmin(player)) {
 				if (cmd.equalsIgnoreCase("setvisit"))
-					options.addAll(onlinePlayerList(player));
+					allOptions.addAll(onlinePlayerList(player));
 				else if (cmd.equalsIgnoreCase("delvisit"))
-					options.addAll(getPlayersToShow(player, args));
+					allOptions.addAll(getAllPlayers(player, args));
 			}
+			
 			if (cmd.equalsIgnoreCase("visit")) {
-				options.addAll(getPlayersToShow(player, args));
+				allOptions.addAll(getAllPlayers(player, args));
 			}
 			else if (cmd.equalsIgnoreCase(Messages.COMMAND_LABEL)) {
-				options.add("help");
-				options.add("messages");
+				allOptions.add("help");
+				allOptions.add("messages");
 				if (player == null || isAdmin(player)) {
-					options.add("reload");
+					allOptions.add("reload");
 				}
 			}
-		} else if (args.length == 1 || args.length == 2) {
-			if (cmd.equalsIgnoreCase("messages")) {
-				options.add("on");
-				options.add("off");
+		} 
+		if (args.length == 1 || args.length == 2) {
+			if (args[0].equalsIgnoreCase("messages")) {
+				allOptions.add("on");
+				allOptions.add("off");
 			}
 		}
+		// Sort out our array
+		if (args.length == 0)
+			options = allOptions;
+		else if (args.length == 1)
+			StringUtil.copyPartialMatches(args[0], allOptions, options);
+		else if (args.length == 2)
+			StringUtil.copyPartialMatches(args[1], allOptions, options);
 		Collections.sort(options);
 		return options;
 	}
 	
-	private List<String> getPlayersToShow(Player player, String[] args) {
+	private List<String> getAllPlayers(Player player, String[] args) {
 		List<String> allPlayers = new ArrayList<>();
 		allPlayers.addAll(plugin.players().names());
 		allPlayers.addAll(onlinePlayerList(player));
-		List<String> showPlayers = new ArrayList<>();
-		// Cycle through all players and see if any start with our given string
-		if (args.length == 1)
-			StringUtil.copyPartialMatches(args[0], allPlayers, showPlayers);
-		else
-			showPlayers = allPlayers;
 		
-		return showPlayers;
+		return allPlayers;
 	}
 	
 	private boolean isAdmin(Player player) {

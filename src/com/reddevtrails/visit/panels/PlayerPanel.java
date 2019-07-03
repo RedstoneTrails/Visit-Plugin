@@ -14,7 +14,7 @@
  *     You should have received a copy of the GNU General Public License
  *     along with ASkyBlock.  If not, see <http://www.gnu.org/licenses/>.
  *******************************************************************************/
-package com.skyblockedmc.visit.panels;
+package com.reddevtrails.visit.panels;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,16 +39,16 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 
-import com.skyblockedmc.visit.Messages.Message;
-import com.skyblockedmc.visit.Visit;
-import com.skyblockedmc.visit.utils.HeadGetter.HeadInfo;
-import com.skyblockedmc.visit.utils.Requester;
-import com.skyblockedmc.visit.utils.Util;
+import com.reddevtrails.visit.Settings;
+import com.reddevtrails.visit.Visit;
+import com.reddevtrails.visit.Messages.Message;
+import com.reddevtrails.visit.utils.Requester;
+import com.reddevtrails.visit.utils.Util;
+import com.reddevtrails.visit.utils.HeadGetter.HeadInfo;
 
 public class PlayerPanel implements Listener, Requester {
     private Visit plugin;
     private List<Inventory> playerPanel;
-    private static final int PANELSIZE = 45; // Must be a multiple of 9
     // The list of all players who have visit locations and their corresponding inventory icon
     // A stack of zero amount will mean they are not active
     private Map<UUID, ItemStack> cachedPlayers;
@@ -72,7 +72,7 @@ public class PlayerPanel implements Listener, Requester {
             } else {
                 ItemStack playerSkull = new ItemStack(Material.PLAYER_HEAD, 1);
                 SkullMeta meta = (SkullMeta) playerSkull.getItemMeta();
-                meta.setDisplayName(playerName);
+                meta.setDisplayName(Message.PLAYERS_NAME_COLOR.toString() + playerName);
                 playerSkull.setItemMeta(meta);
                 cachedPlayers.put(playerUUID, playerSkull);
                 // Get the player head async
@@ -127,7 +127,7 @@ public class PlayerPanel implements Listener, Requester {
         }
         ItemStack playerSkull = new ItemStack(Material.PLAYER_HEAD, 1);
         SkullMeta meta = (SkullMeta) playerSkull.getItemMeta();
-        meta.setDisplayName(playerName);
+        meta.setDisplayName(Message.PLAYERS_NAME_COLOR.toString() + playerName);
         playerSkull.setItemMeta(meta);
         cachedPlayers.put(playerUUID, playerSkull);
         updatePanel();
@@ -142,19 +142,25 @@ public class PlayerPanel implements Listener, Requester {
         List<Inventory> updated = new ArrayList<>();
         Collection<UUID> activeVisits = plugin.players().map().keySet();
         
+        // Get panel size, protect us from dumb values
+        int panelSize = Math.round(Settings.maxPlayersPerPage / 9) * 9;
+        if (panelSize < 9)
+        	panelSize = 9;
+        else if (panelSize > 45)
+        	panelSize = 45;
+        
         // Create the player panels
         int size = activeVisits.size();
-        int panelNumber = size / (PANELSIZE-2);
-        int remainder = (size % (PANELSIZE-2)) + 8 + 2;
+        int panelNumber = size / (panelSize - 2);
+        int remainder = (size % (panelSize - 2)) + 8 + 2;
         remainder -= (remainder % 9);
         int i = 0;
         
-        // TODO: Make panel title a string
         for (i = 0; i < panelNumber; i++) 
-            updated.add(Bukkit.createInventory(null, PANELSIZE, Message.PLAYERS_TITLE + " #" + (i + 1)));
+            updated.add(Bukkit.createInventory(null, panelSize, Message.PLAYERS_TITLE.toString() + " #" + (i + 1)));
         
         // Make the last panel
-        updated.add(Bukkit.createInventory(null, remainder, Message.PLAYERS_TITLE + " #" + (i + 1)));
+        updated.add(Bukkit.createInventory(null, remainder, Message.PLAYERS_TITLE.toString() + " #" + (i + 1)));
         playerPanel = new ArrayList<>(updated);
         panelNumber = 0;
         int slot = 0;
@@ -166,7 +172,7 @@ public class PlayerPanel implements Listener, Requester {
                 playerPanel.get(panelNumber).setItem(slot++, icon);
 
                 // Check if the panel is full
-                if (slot == PANELSIZE - 2) {
+                if (slot == panelSize - 2) {
                     // Add navigation buttons
                     if (panelNumber > 0) {
                         playerPanel.get(panelNumber).setItem(slot++, new CPItem(Material.PAPER, Message.PLAYERS_PREVIOUS.toString(), "players " + (panelNumber - 1), "").getItem());

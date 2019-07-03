@@ -14,7 +14,7 @@
  *     You should have received a copy of the GNU General Public License
  *     along with ASkyBlock.  If not, see <http://www.gnu.org/licenses/>.
  *******************************************************************************/
-package com.skyblockedmc.visit.utils;
+package com.reddevtrails.visit.utils;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -31,7 +31,7 @@ import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 
-import com.skyblockedmc.visit.Visit;
+import com.reddevtrails.visit.Visit;
 
 public class HeadGetter  {
     private final Map<UUID, HeadInfo> cachedHeads = new HashMap<>();
