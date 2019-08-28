@@ -23,3 +23,28 @@ Messages-Default-On: true
 # The GUI will only show as many rows as it needs at one time, no matter the max.
 # I advise leaving this value at 45 to get the most out of it. If you need to go smaller, 27 is a good value as well.
 Max-Players-Per-Page: 45
+
+# Commands outside of this plugin that will set a players visit location, without having to type /setvisit
+# Most common use case would be wanting a players Essentials home to be their visit location.
+# Multiple commands are allowed, just do a new line with a '-' before each command, like shown below.
+# Remove the '#' from in front of the sethome command below to enable it.
+Custom-Set-Visit-Commands:
+#  - sethome
+
+# Should this command work if there are arguments after the custom command, or only when the custom command is used alone?
+# If false, the plugin will only set visit when a command is used without any arguments. 
+# For example, it would work with /sethome, but not with /sethome Cave.
+# If true, this will work so long as the command used is on the list, no matter the arguments.
+# So this would work if the player used /sethome or /sethome Cave.
+Allow-Additional-Parameters: false
+
+# Should the player be sent the message that their visit location has been set when using custom commands?
+# If true, /sethome would send a message saying they set their visit, along with the default Essentials sethome message.
+# If false, /sethome would only send the default Essentials sethome message.
+Send-Message-On-Custom-Command: true
+
+# If true, players cannot use the /setvisit or /delvisit commands.
+# Visit locations can only be set by custom commands set above, or when set by another plugin.
+# Used if you do not want players to have control of their visit location.
+# Players can still use visit commands, and configure their notification settings.
+Block-Set-Visit-Command: false

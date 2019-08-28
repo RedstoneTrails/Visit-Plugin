@@ -31,101 +31,112 @@ import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 
+import com.reddevtrails.visit.Messages;
+import com.reddevtrails.visit.Messages.Message;
 import com.reddevtrails.visit.Visit;
 
-public class HeadGetter  {
-    private final Map<UUID, HeadInfo> cachedHeads = new HashMap<>();
-    private final Map<UUID, String> names = new ConcurrentHashMap<>();
-    private final Map<UUID, Set<Requester>> headRequesters = new HashMap<>();
-    private final Visit plugin;
-    /**
-     * @param plugin
-     */
-    public HeadGetter(Visit plugin) {
-        super();
-        this.plugin = plugin;
-        runPlayerHeadGetter();
-    }
+public class HeadGetter {
+	private final Map<UUID, HeadInfo> cachedHeads = new HashMap<>();
+	private final Map<UUID, String> names = new ConcurrentHashMap<>();
+	private final Map<UUID, Set<Requester>> headRequesters = new HashMap<>();
+	private final Visit plugin;
 
-    private void runPlayerHeadGetter() {
-        plugin.getServer().getScheduler().runTaskTimerAsynchronously(plugin, () -> {
-            synchronized(names) {
-                Iterator<Entry<UUID, String>> it = names.entrySet().iterator();
-                if (it.hasNext()) {
-                    Entry<UUID, String> en = it.next();
-                    ItemStack playerSkull = new ItemStack(Material.PLAYER_HEAD, 1);
-                    SkullMeta meta = (SkullMeta) playerSkull.getItemMeta();
-                    meta.setOwningPlayer(Bukkit.getOfflinePlayer(en.getKey()));
-                    meta.setDisplayName(ChatColor.WHITE + en.getValue());
-                    playerSkull.setItemMeta(meta);
-                    
-                    // Save in cache
-                    cachedHeads.put(en.getKey(), new HeadInfo(en.getValue(), en.getKey(), playerSkull));
-                    // Tell requesters the head came in
-                    if (headRequesters.containsKey(en.getKey())) {
-                        for (Requester req : headRequesters.get(en.getKey())) {
-                            plugin.getServer().getScheduler().runTask(plugin, () -> req.setHead(new HeadInfo(en.getValue(), en.getKey(), playerSkull)));
-                        }
-                    }
-                    it.remove();
-                }
-            }
-        }, 0L, 20L);
-    }
+	/**
+	 * @param plugin
+	 */
+	public HeadGetter(Visit plugin) {
+		super();
+		this.plugin = plugin;
+		runPlayerHeadGetter();
+	}
 
-    public void getHead(UUID playerUUID, Requester requester) {
-        if (playerUUID == null) {
-            return;
-        }
-        String name = Bukkit.getOfflinePlayer(playerUUID).getName();
-        if (name == null || name.isEmpty()) {
-            return;
-        }
-        // Check if in cache
-        if (cachedHeads.containsKey(playerUUID)) {
-            requester.setHead(cachedHeads.get(playerUUID));
-        } else {
-            // Get the name
-            headRequesters.putIfAbsent(playerUUID, new HashSet<>());
-            Set<Requester> requesters = headRequesters.get(playerUUID);
-            requesters.add(requester);
-            headRequesters.put(playerUUID, requesters);
-            names.put(playerUUID, name);
-        }
-    }
-    
-    public class HeadInfo {
-        String name = "";
-        UUID uuid;
-        ItemStack head;
-        /**
-         * @param name
-         * @param uuid
-         * @param head
-         */
-        public HeadInfo(String name, UUID uuid, ItemStack head) {
-            this.name = name;
-            this.uuid = uuid;
-            this.head = head;
-        }
-        /**
-         * @return the name
-         */
-        public String getName() {
-            return name;
-        }
-        /**
-         * @return the uuid
-         */
-        public UUID getUuid() {
-            return uuid;
-        }
-        /**
-         * @return the head
-         */
-        public ItemStack getHead() {
-            return head.clone();
-        }
+	private void runPlayerHeadGetter() {
+		plugin.getServer().getScheduler().runTaskTimerAsynchronously(plugin, () -> {
+			synchronized (names) {
+				Iterator<Entry<UUID, String>> it = names.entrySet().iterator();
+				if (it.hasNext()) {
+					// TODO: Revisit logic. Not sure why the head is retrieved and set in two
+					// locations.
+					// Other location is in PlayerPanel.java.
+					Entry<UUID, String> en = it.next();
+					ItemStack playerSkull = new ItemStack(Material.PLAYER_HEAD, 1);
+					SkullMeta meta = (SkullMeta) playerSkull.getItemMeta();
+					meta.setOwningPlayer(Bukkit.getOfflinePlayer(en.getKey()));
+					meta.setDisplayName(ChatColor.RESET + Message.PLAYERS_NAME.toString().replace(Messages.PLAYER_LABEL, en.getValue()));
+					playerSkull.setItemMeta(meta);
 
-    }
+					// Save in cache
+					cachedHeads.put(en.getKey(), new HeadInfo(en.getValue(), en.getKey(), playerSkull));
+					// Tell requesters the head came in
+					if (headRequesters.containsKey(en.getKey())) {
+						for (Requester req : headRequesters.get(en.getKey())) {
+							plugin.getServer().getScheduler().runTask(plugin,
+									() -> req.setHead(new HeadInfo(en.getValue(), en.getKey(), playerSkull)));
+						}
+					}
+					it.remove();
+				}
+			}
+		}, 0L, 20L);
+	}
+
+	public void getHead(UUID playerUUID, Requester requester) {
+		if (playerUUID == null) {
+			return;
+		}
+		String name = Bukkit.getOfflinePlayer(playerUUID).getName();
+		if (name == null || name.isEmpty()) {
+			return;
+		}
+		// Check if in cache
+		if (cachedHeads.containsKey(playerUUID)) {
+			requester.setHead(cachedHeads.get(playerUUID));
+		} else {
+			// Get the name
+			headRequesters.putIfAbsent(playerUUID, new HashSet<>());
+			Set<Requester> requesters = headRequesters.get(playerUUID);
+			requesters.add(requester);
+			headRequesters.put(playerUUID, requesters);
+			names.put(playerUUID, name);
+		}
+	}
+
+	public class HeadInfo {
+		String name = "";
+		UUID uuid;
+		ItemStack head;
+
+		/**
+		 * @param name
+		 * @param uuid
+		 * @param head
+		 */
+		public HeadInfo(String name, UUID uuid, ItemStack head) {
+			this.name = name;
+			this.uuid = uuid;
+			this.head = head;
+		}
+
+		/**
+		 * @return the name
+		 */
+		public String getName() {
+			return name;
+		}
+
+		/**
+		 * @return the uuid
+		 */
+		public UUID getUuid() {
+			return uuid;
+		}
+
+		/**
+		 * @return the head
+		 */
+		public ItemStack getHead() {
+			return head.clone();
+		}
+
+	}
 }

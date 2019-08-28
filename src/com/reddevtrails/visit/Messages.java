@@ -61,7 +61,7 @@ public class Messages {
 		toSave += addMessage("players-next", "Next");
 		toSave += addMessage("players-previous", "Previous");
 		
-		toSave += addMessage("players-name-color", "&f"); 
+		toSave += addMessage("players-name", "&f" + PLAYER_LABEL); 
 		
 		// General messages
 		//toSave += addComment("Mesages for general visit creation/deletion and use");
@@ -81,15 +81,15 @@ public class Messages {
 		
 		// Error messages
 		//toSave += addComment("Messages sent when there was an issue completing a command operation");
-		toSave += addMessage("error.player-not-found", "&4Player &e" + PLAYER_LABEL + " &4was not found.");
-		toSave += addMessage("error.visit-not-set", "&4Player &e" + PLAYER_LABEL + " &4does not have a visit location.");
-		toSave += addMessage("error.no-visit-locations", "&4No visit locations have been set.");
-		toSave += addMessage("error.no-visit-location", "&4You do not have a visit location set.");
-		toSave += addMessage("error.unsafe-location", "&4Location is not safe.");
-		toSave += addMessage("error.invalid-location", "&4You cannot set your visit location in this world.");
-		toSave += addMessage("error.no-home-to-delete", "&4No visit location was previously set.");
-		toSave += addMessage("error.messages-already-on", "&4Visit notificaitons are already on.");
-		toSave += addMessage("error.messages-already-off", "&4Visit notificaitons are already off.");
+		toSave += addMessage("error.player-not-found", "&cPlayer &e" + PLAYER_LABEL + " &cwas not found.");
+		toSave += addMessage("error.visit-not-set", "&cPlayer &e" + PLAYER_LABEL + " &cdoes not have a visit location.");
+		toSave += addMessage("error.no-visit-locations", "&cNo visit locations have been set.");
+		toSave += addMessage("error.no-visit-location", "&cYou do not have a visit location set.");
+		toSave += addMessage("error.unsafe-location", "&cLocation is not safe.");
+		toSave += addMessage("error.invalid-location", "&cYou cannot set your visit location in this world.");
+		toSave += addMessage("error.no-home-to-delete", "&cNo visit location was previously set.");
+		toSave += addMessage("error.messages-already-on", "&cVisit notificaitons are already on.");
+		toSave += addMessage("error.messages-already-off", "&cVisit notificaitons are already off.");
 		
 		// Help messages
 		toSave += addMessage("help.header", "&a--- Visit Commands ---");
@@ -142,7 +142,7 @@ public class Messages {
 	}
 
 	public static enum Message {
-		PLAYERS_TITLE, PLAYERS_NEXT, PLAYERS_PREVIOUS, PLAYERS_NAME_COLOR, SET_VISIT, DEL_VISIT, VISIT, VISITED_YOU, MESSAGES_ON, MESSAGES_OFF;
+		PLAYERS_TITLE, PLAYERS_NEXT, PLAYERS_PREVIOUS, PLAYERS_NAME, SET_VISIT, DEL_VISIT, VISIT, VISITED_YOU, MESSAGES_ON, MESSAGES_OFF;
 
 		@Override
 		public String toString() {

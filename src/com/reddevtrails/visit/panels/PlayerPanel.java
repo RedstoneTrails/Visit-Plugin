@@ -39,6 +39,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 
+import com.reddevtrails.visit.Messages;
 import com.reddevtrails.visit.Settings;
 import com.reddevtrails.visit.Visit;
 import com.reddevtrails.visit.Messages.Message;
@@ -59,27 +60,33 @@ public class PlayerPanel implements Listener, Requester {
     public PlayerPanel(Visit plugin) {
         this.plugin = plugin;
         playerPanel = new ArrayList<Inventory>();
-        cachedPlayers = new HashMap<UUID,ItemStack>();
+        cachedPlayers = new HashMap<UUID, ItemStack>();
         // Load the cache once server starts
         Bukkit.getScheduler().runTask(plugin, () -> loadCache());
     }
     
     private void loadCache() {
     	for (UUID playerUUID : plugin.players().map().keySet()) {
-            String playerName = Bukkit.getOfflinePlayer(playerUUID).getName();
-            if (playerName == null) {
-                plugin.getLogger().warning("Error finding name for player with UUID: " + playerUUID.toString() + ". Skipping...");
-            } else {
-                ItemStack playerSkull = new ItemStack(Material.PLAYER_HEAD, 1);
-                SkullMeta meta = (SkullMeta) playerSkull.getItemMeta();
-                meta.setDisplayName(Message.PLAYERS_NAME_COLOR.toString() + playerName);
-                playerSkull.setItemMeta(meta);
-                cachedPlayers.put(playerUUID, playerSkull);
-                // Get the player head async
-                addName(playerUUID, playerName);
-            }
+            addToCache(playerUUID);
         }
         updatePanel();
+    }
+    
+    private void addToCache(UUID playerUUID) {
+    	String playerName = Bukkit.getOfflinePlayer(playerUUID).getName();
+        if (playerName == null || playerName.isEmpty()) {
+        	plugin.getLogger().warning("Error finding name for player with UUID: " + playerUUID.toString() + ". Skipping...");
+            return;
+        }
+        
+        ItemStack playerSkull = new ItemStack(Material.PLAYER_HEAD, 1);
+        SkullMeta meta = (SkullMeta) playerSkull.getItemMeta();
+        meta.setOwningPlayer(Bukkit.getOfflinePlayer(playerUUID));
+        meta.setDisplayName(ChatColor.RESET + Message.PLAYERS_NAME.toString().replace(Messages.PLAYER_LABEL, playerName));
+        playerSkull.setItemMeta(meta);
+        cachedPlayers.put(playerUUID, playerSkull);
+        // Get the player head async
+        addName(playerUUID, playerName);
     }
 
     /**
@@ -120,19 +127,8 @@ public class PlayerPanel implements Listener, Requester {
             updatePanel();
             return;
         }
-
-        String playerName = Bukkit.getOfflinePlayer(playerUUID).getName();
-        if (playerName == null || playerName.isEmpty()) {
-            return;
-        }
-        ItemStack playerSkull = new ItemStack(Material.PLAYER_HEAD, 1);
-        SkullMeta meta = (SkullMeta) playerSkull.getItemMeta();
-        meta.setDisplayName(Message.PLAYERS_NAME_COLOR.toString() + playerName);
-        playerSkull.setItemMeta(meta);
-        cachedPlayers.put(playerUUID, playerSkull);
+        addToCache(playerUUID);
         updatePanel();
-        // Get the player head async
-        addName(playerUUID, playerName);
     }
 
     /**
@@ -229,7 +225,7 @@ public class PlayerPanel implements Listener, Requester {
         
         int panelNumber = 0;
         try {
-            panelNumber = Integer.valueOf(title.substring(title.indexOf('#')+ 1));
+            panelNumber = Integer.valueOf(title.substring(title.indexOf('#') + 1));
         } catch (Exception e) {
             panelNumber = 0;
         }

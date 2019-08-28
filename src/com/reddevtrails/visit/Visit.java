@@ -3,6 +3,7 @@ package com.reddevtrails.visit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.reddevtrails.visit.commands.VisitCommands;
+import com.reddevtrails.visit.listeners.ChatListener;
 import com.reddevtrails.visit.panels.PlayerPanel;
 import com.reddevtrails.visit.utils.HeadGetter;
 
@@ -13,6 +14,8 @@ public class Visit extends JavaPlugin {
 	private Messages messages;
 	private PlayerPanel playerPanel;
 	private HeadGetter headGetter;
+	private ChatListener chatListener;
+	private VisitCommands visitCommands;
 	
 	@Override
 	public void onEnable() {
@@ -21,6 +24,7 @@ public class Visit extends JavaPlugin {
 		messages = new Messages(this);
 		playerPanel = new PlayerPanel(this);
 		headGetter = new HeadGetter(this);
+		chatListener = new ChatListener(this);
 		registerCommands();
 		registerEvents();
 		
@@ -41,21 +45,22 @@ public class Visit extends JavaPlugin {
 	}
 	
 	public void registerCommands() {
-		VisitCommands visitCmds = new VisitCommands(this);
-		getCommand("setvisit").setExecutor(visitCmds);
-		getCommand("setvisit").setTabCompleter(visitCmds);
-		getCommand("delvisit").setExecutor(visitCmds);
-		getCommand("delvisit").setTabCompleter(visitCmds);
-		getCommand("visit").setExecutor(visitCmds);
-		getCommand("visit").setTabCompleter(visitCmds);
-		getCommand("players").setExecutor(visitCmds);
-		getCommand("players").setTabCompleter(visitCmds);
-		getCommand("visitcfg").setExecutor(visitCmds);
-		getCommand("visitcfg").setTabCompleter(visitCmds);
+		visitCommands = new VisitCommands(this);
+		getCommand("setvisit").setExecutor(visitCommands);
+		getCommand("setvisit").setTabCompleter(visitCommands);
+		getCommand("delvisit").setExecutor(visitCommands);
+		getCommand("delvisit").setTabCompleter(visitCommands);
+		getCommand("visit").setExecutor(visitCommands);
+		getCommand("visit").setTabCompleter(visitCommands);
+		getCommand("players").setExecutor(visitCommands);
+		getCommand("players").setTabCompleter(visitCommands);
+		getCommand("visitcfg").setExecutor(visitCommands);
+		getCommand("visitcfg").setTabCompleter(visitCommands);
 	}
 	
 	public void registerEvents() {
 		getServer().getPluginManager().registerEvents(playerPanel, this);
+		getServer().getPluginManager().registerEvents(chatListener, this);
 	}
 	
 	public static Visit plugin() {
@@ -76,5 +81,9 @@ public class Visit extends JavaPlugin {
 	
 	public HeadGetter headGetter() {
 		return headGetter;
+	}
+	
+	public VisitCommands visitCommands() {
+		return visitCommands;
 	}
 }

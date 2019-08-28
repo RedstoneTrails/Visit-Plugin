@@ -1,10 +1,12 @@
 package com.reddevtrails.visit.commands;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -18,6 +20,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.util.StringUtil;
 
 import com.reddevtrails.visit.Messages;
+import com.reddevtrails.visit.Settings;
 import com.reddevtrails.visit.VPlayer;
 import com.reddevtrails.visit.Visit;
 import com.reddevtrails.visit.Messages.AdminMessage;
@@ -49,10 +52,10 @@ public class VisitCommands extends LocationUtil implements CommandExecutor, TabC
 		String cmd = command.getName().toLowerCase();
 
 		// Using /setvisit
-		if (cmd.equalsIgnoreCase("setvisit")) {
+		if (cmd.equalsIgnoreCase("setvisit") && !Settings.blockSetVistCommand) {
 			// Generic player use
 			if (args.length == 0) {
-				setVisit(player, uuid, player.getLocation());
+				setVisit(player, uuid, player.getLocation(), true);
 			}
 			// Admin use to set other player's visit
 			else if (args.length == 1 && isAdmin(player)) {
@@ -60,7 +63,7 @@ public class VisitCommands extends LocationUtil implements CommandExecutor, TabC
 				if (target == null)
 					sender.sendMessage(ErrorMessage.PLAYER_NOT_FOUND.toString().replace(Messages.PLAYER_LABEL, args[0]));
 				else
-					setVisit(player, target, player.getLocation());
+					setVisit(player, target, player.getLocation(), true);
 			}
 			// Too many args, send proper usage
 			else {
@@ -70,7 +73,7 @@ public class VisitCommands extends LocationUtil implements CommandExecutor, TabC
 			return true;
 		}
 		// Using /delvisit
-		else if (cmd.equalsIgnoreCase("delvisit")) {
+		else if (cmd.equalsIgnoreCase("delvisit") && !Settings.blockSetVistCommand) {
 			// Generic player use
 			if (args.length == 0) {
 				delVisit(player, uuid);
@@ -109,8 +112,10 @@ public class VisitCommands extends LocationUtil implements CommandExecutor, TabC
 		}
 		// Using /players
 		else if (cmd.equalsIgnoreCase("players")) {
-			//TODO: Add in cases where page numbers are given taking args into consideration
-			showPlayers(player);
+			if (args.length == 0)
+				showPlayers(player);
+			else
+				showPlayers(player, Integer.valueOf(args[0]));
 			
 			return true;
 		}
@@ -198,7 +203,7 @@ public class VisitCommands extends LocationUtil implements CommandExecutor, TabC
 	 * @param uuid - UUID of the player who's visit location is being set. Works whether they are online or offline
 	 * @param loc - Location to set the visit to
 	 */
-	private void setVisit(Player player, UUID uuid, Location loc) {
+	public void setVisit(Player player, UUID uuid, Location loc, boolean sendMessage) {
 		// TODO: Allow customization of what worlds players can set their visit in
 		// Prevent setting visit in disallowed world
 		if (loc.getWorld().getEnvironment() != Environment.NORMAL) {
@@ -215,6 +220,9 @@ public class VisitCommands extends LocationUtil implements CommandExecutor, TabC
 		
 		// All is well, set their visit here
 		plugin.players().add(uuid, loc);
+		
+		// Leave now if we don't want to send any messages
+		if (!sendMessage) return;
 		
 		// Send appropriate confirmation message
 		String message;
@@ -311,12 +319,17 @@ public class VisitCommands extends LocationUtil implements CommandExecutor, TabC
 	}
 	
 	private void showPlayers(Player player) {
+		showPlayers(player, 1);
+	}
+	
+	private void showPlayers(Player player, int page) {
+		page = page - 1;
 		if (plugin.players().map().isEmpty()) {
 			player.sendMessage(ErrorMessage.NO_VISIT_LOCATIONS.toString());
 			return;
 		}
 			
-		player.openInventory(plugin.playerPanel().getPanel(0));
+		player.openInventory(plugin.playerPanel().getPanel(page));
 	}
 	
 	private void showHelp(CommandSender sender) {
@@ -374,13 +387,23 @@ public class VisitCommands extends LocationUtil implements CommandExecutor, TabC
 				allOptions.add("off");
 			}
 		}
+		
+		allOptions.removeAll(Arrays.asList("", null));
+		
 		// Sort out our array
-		if (args.length == 0)
+		if (args.length == 0) {
 			options = allOptions;
-		else if (args.length == 1)
-			StringUtil.copyPartialMatches(args[0], allOptions, options);
-		else if (args.length == 2)
-			StringUtil.copyPartialMatches(args[1], allOptions, options);
+		} else if (args.length == 1) {
+			if (StringUtils.isEmpty(args[0]))
+				options = allOptions;
+			else
+				StringUtil.copyPartialMatches(args[0], allOptions, options);
+		} else if (args.length == 2) {
+			if (StringUtils.isEmpty(args[1]))
+				options = allOptions;
+			else
+				StringUtil.copyPartialMatches(args[1], allOptions, options);
+		}
 		Collections.sort(options);
 		return options;
 	}
